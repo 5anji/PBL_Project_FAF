@@ -6,10 +6,12 @@
 class Application {
     sf::ContextSettings settings;
     sf::Clock clock;
-    sf::VideoMode video_mode{1024, 768};
-    uint8_t style = sf::Style::Default;
-    const char* title = "Test";
+    sf::VideoMode video_mode;
+    uint8_t style;
+    const char* title;
+    std::string args;
 public:
+    void modify_args(int, const char**);
     Application(int, const char**);
     int8_t start();
     ~Application();
