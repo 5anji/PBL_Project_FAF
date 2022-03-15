@@ -4,12 +4,14 @@
 #include "str2int.h"
 
 #include <cmath>
-
+#include <fstream>
 // Creating the object
 Application::Application(int argc, const char** argv)
         : video_mode(1024, 768)
         , style(sf::Style::Default)
-        , title("Test") {
+        , title("Test")
+        , map_directory("maps/")
+        , map_file("default.txt") {
     if (argc > 0) {
         modify_args(argc, argv);
     }
@@ -22,13 +24,13 @@ void Application::modify_args(int argc, const char** argv) {
         switch (str2int(argv[i])) {
         case str2int("-d"): {
             if ((i + 2) < argc) {
-                std::string width = argv[i + 1];
-                std::string height = argv[i + 2];
-                if (isNumber(width) && isNumber(height)) {
-                    uint8_t temp_width = std::stoi(width);
-                    uint8_t temp_height = std::stoi(height);
+                std::string square_width = argv[i + 1];
+                std::string square_height = argv[i + 2];
+                if (isNumber(square_width) && isNumber(square_height)) {
+                    uint16_t temp_width = std::stoi(square_width);
+                    uint16_t temp_height = std::stoi(square_height);
 
-                    if (temp_width >= 200 && temp_height >= 200) {
+                    if ((temp_width >= 200) && (temp_height >= 200)) {
                         video_mode.width = temp_width;
                         video_mode.height = temp_height;
                     } else {
@@ -44,7 +46,11 @@ void Application::modify_args(int argc, const char** argv) {
             break;
         }
         case str2int("-m"):
-            // std::cout << argv[i] << std::endl;
+            if ((i + 1) < argc) {
+                map_file = argv[i + 1];
+            } else {
+                std::cout << "Invalid expression. Using default map" << std::endl;
+            }
             break;
         case str2int("-f"):
             // std::cout << argv[i] << std::endl;
@@ -60,83 +66,73 @@ void Application::modify_args(int argc, const char** argv) {
 // Starting the main window
 int8_t Application::start() {
     sf::RenderWindow window(video_mode, title, style, settings);
-    window.setVerticalSyncEnabled(true);
+    window.setFramerateLimit(30);
 
-    // test code:
-    sf::ConvexShape shape;
-    shape.setPointCount(6);
-    shape.setPoint(0, sf::Vector2f(0, 1 * 200));
-    shape.setPoint(1, sf::Vector2f(0.866025 * 200, 0.5 * 200));
-    shape.setPoint(2, sf::Vector2f(0.866025 * 200, -0.5 * 200));
-    shape.setPoint(3, sf::Vector2f(0, -1 * 200));
-    shape.setPoint(4, sf::Vector2f(-0.866025 * 200, -0.5 * 200));
-    shape.setPoint(5, sf::Vector2f(-0.866025 * 200, 0.5 * 200));
-    shape.setFillColor(sf::Color::Cyan);
-    shape.setOutlineThickness(3);
-    shape.setOutlineColor(sf::Color::Red);
-    shape.setPosition(640, 360);
-
-    int sign = 1, step = 1, k_delay = 0;
-    int i = 0, count = 0;
-
-    sf::Time timer;
-    sf::Text debug;
-    sf::Font font;
-    font.loadFromFile("fonts/Roboto-Black.ttf");
-    timer = sf::milliseconds(1000 / 60);
+    generate_map(window);
 
     while (window.isOpen()) {
-        sf::Event event{};
+        sf::Event event;
         while (window.pollEvent(event)) {
             if (event.type == sf::Event::Closed) window.close();
-            if (event.type == sf::Event::Resized) {
-                sf::FloatRect visibleArea(0, 0, event.size.width, event.size.height);
-                window.setView(sf::View(visibleArea));
+        }
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::LControl) && sf::Keyboard::isKeyPressed(sf::Keyboard::Q)) window.close();
+        window.clear();
+
+        for (auto&& i : main_map) {
+            for (auto&& j : i) {
+                window.draw(j);
             }
         }
 
-        if (k_delay == 5) {
-            if (sf::Keyboard::isKeyPressed(sf::Keyboard::Numpad0)) step = 1;
-            if (sf::Keyboard::isKeyPressed(sf::Keyboard::Up)) step++;
-            if (sf::Keyboard::isKeyPressed(sf::Keyboard::Down) && step > 1) step--;
-
-            debug.setPosition(15, 15);
-            debug.setFillColor(sf::Color::Red);
-            debug.setFont(font);
-            debug.setCharacterSize(14);
-            debug.setString("Rotation speed: " + std::to_string(step) + " degrees" + "/sec");
-
-            k_delay = 0;
-        }
-
-        sf::sleep(timer);
-
-        float scale;
-        scale = 200 - fabs(i) / 2;
-        shape.setPoint(0, sf::Vector2f(0, 1 * scale));
-        shape.setPoint(1, sf::Vector2f(0.866025 * scale, 0.5 * scale));
-        shape.setPoint(2, sf::Vector2f(0.866025 * scale, -0.5 * scale));
-        shape.setPoint(3, sf::Vector2f(0, -1 * scale));
-        shape.setPoint(4, sf::Vector2f(-0.866025 * scale, -0.5 * scale));
-        shape.setPoint(5, sf::Vector2f(-0.866025 * scale, 0.5 * scale));
-        shape.setRotation(i);
-        shape.setPosition(window.getSize().x / 2, window.getSize().y / 2);
-        count++;
-
-        window.clear();
-        window.draw(shape);
-        window.draw(debug);
         window.display();
-        i = i + sign * (step);
-
-        if (i >= 360 || i <= -360) {
-            sign *= -1;
-        }
-        k_delay++;
     }
-    // end
 
     return 0;
+}
+
+// Generating map from file
+void Application::generate_map(sf::RenderWindow& window) {
+loop:
+    std::ifstream infile;
+    infile.open(map_directory + map_file, std::ios::out);
+    if (infile.is_open()) {
+        std::string temp;
+        uint8_t i = 0;
+        while (getline(infile, temp)) {
+            map.push_back(temp);
+            i++;
+        }
+    } else {
+        std::cout << "Error loading map. Using default one" << std::endl;
+        map_file = "default.txt";
+        infile.close();
+        goto loop;
+    }
+
+    infile.close();
+    // parsing characters to figures:
+    sf::Vector2<float> pos(0, 0);
+    float square_width = static_cast<float>(window.getSize().x) / static_cast<float>(map[0].size());
+    float square_height = static_cast<float>(window.getSize().y) / static_cast<float>(map.size());
+
+    for (size_t i = 0; i < map.size(); i++) {
+        std::vector<sf::RectangleShape> temp;
+        pos.x = 0;
+        for (size_t j = 0; j < map[i].size(); j++) {
+            sf::RectangleShape new_square;
+            /// @todo: make available for other characters on the map
+            if (map[i][j] == '*') {
+                new_square.setFillColor(sf::Color::Blue);
+            }
+            new_square.setPosition(pos);
+            new_square.setSize(sf::Vector2<float>(square_width, square_height));
+
+            pos.x += square_width;
+            temp.push_back(new_square);
+        }
+        pos.y += square_height;
+        main_map.push_back(temp);
+    }
 }
 
 // Destroying the object
