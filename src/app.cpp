@@ -1,7 +1,7 @@
 #include "app.h"
 
-#include "isNumber.h"
-#include "str2int.h"
+#include "../libs/isNumber.h"
+#include "../libs/str2int.h"
 
 #include <cmath>
 #include <fstream>
@@ -68,28 +68,22 @@ void Application::modify_args(int argc, const char** argv) {
 int8_t Application::start() {
     sf::RenderWindow window(video_mode, title, style, settings);
     window.setFramerateLimit(48);
+
     generate_map(window);
 
-    sf::Texture texture;
-    texture.loadFromFile("textures/background.jpg");
-    sf::Sprite background(texture);
-    while (window.isOpen()) {
-        sf::Event event;
-        while (window.pollEvent(event)) {
-            if (event.type == sf::Event::Closed) window.close();
-        }
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::LControl) && sf::Keyboard::isKeyPressed(sf::Keyboard::Q)) window.close();
+    uint8_t entry = display_menu(window);
 
-        window.clear();
-        window.draw(background);
-
-        for (auto&& i : main_map) {
-            for (auto&& j : i) {
-                window.draw(j);
-            }
-        }
-
-        window.display();
+    switch (entry) {
+    case 1:
+        simulate(window);
+        break;
+    case 2:
+        break;
+    case 3:
+        break;
+    case 4:
+    default:
+        break;
     }
 
     return 0;
@@ -139,6 +133,151 @@ loop:
         }
         pos.y += square_height;
         main_map.push_back(temp);
+    }
+}
+
+// Display the startup menu
+uint8_t Application::display_menu(sf::RenderWindow& window) {
+    sf::Font font;
+    if (!font.loadFromFile("fonts/DisposableDroidBB.ttf"))
+        std::cout << "Can't find the font file" << std::endl;
+
+    sf::Texture texture;
+    texture.loadFromFile("textures/menu-sky.jpg");
+    texture.setSmooth(true);
+    sf::Sprite background(texture);
+    background.setOrigin(window.getSize().x / 2, window.getSize().y / 2);
+
+    std::vector<std::tuple<sf::RectangleShape, sf::RectangleShape, sf::Text>> buttons;
+    const char* titles[] = {"Start Simulation", "Options", "Credits", "Exit"};
+
+    for (size_t i = 0; i < 4; i++) {
+        sf::RectangleShape button;
+        sf::RectangleShape overlay;
+        sf::Vector2<float> size(350, 45);
+        sf::Vector2<float> position(window.getSize().x / 2 - 175, 300 + (i + 1) * (window.getSize().y / 8) - 22.5f);
+
+        button.setSize(size);
+        overlay.setSize(button.getSize());
+        button.setPosition(position);
+        overlay.setPosition(button.getPosition());
+        button.setFillColor(sf::Color(0, 191, 255));
+        overlay.setFillColor(sf::Color(0, 0, 0, 0));
+
+        sf::Text text;
+        text.setFont(font);
+        text.setStyle(sf::Text::Bold);
+        text.setString(titles[i]);
+        text.setFillColor(sf::Color::Black);
+        text.setCharacterSize(48);
+        sf::FloatRect textRect = text.getLocalBounds();
+        text.setOrigin(textRect.left + textRect.width / 2, textRect.top + textRect.height / 2);
+        text.setPosition(position.x + 175, position.y + 22.5f);
+
+        buttons.push_back(std::make_tuple(button, overlay, text));
+    }
+
+    uint8_t return_entry = 0;
+    float step = 0.0015f;
+
+    sf::Vector2<float> b_scale(1.0f, 1.0f);
+
+    while (window.isOpen() && !return_entry) {
+        sf::Event Event;
+        while (window.pollEvent(Event)) {
+            switch (Event.type) {
+            case sf::Event::Closed:
+                window.close();
+                break;
+            case sf::Event::MouseMoved: {
+                sf::Vector2i mousePos = sf::Mouse::getPosition(window);
+                sf::Vector2f mousePosF(static_cast<float>(mousePos.x), static_cast<float>(mousePos.y));
+                for (auto&& i : buttons) {
+                    if (std::get<1>(i).getGlobalBounds().contains(mousePosF)) {
+                        std::get<1>(i).setFillColor(sf::Color(255, 255, 255, 85.33f));
+                        std::get<1>(i).setOutlineThickness(3);
+                        std::get<1>(i).setOutlineColor(sf::Color(255, 0, 0));
+                    } else {
+                        std::get<1>(i).setFillColor(sf::Color(0, 0, 0, 0));
+                        std::get<1>(i).setOutlineThickness(0);
+                        std::get<1>(i).setOutlineColor(sf::Color(0, 0, 0, 0));
+                    }
+                }
+
+                break;
+            }
+            case sf::Event::MouseButtonPressed: {
+                sf::Vector2i mousePos = sf::Mouse::getPosition(window);
+                sf::Vector2f mousePosF(static_cast<float>(mousePos.x), static_cast<float>(mousePos.y));
+                if (std::get<1>(buttons[0]).getGlobalBounds().contains(mousePosF)) {
+                    return_entry = 1;
+                } else if (std::get<1>(buttons[1]).getGlobalBounds().contains(mousePosF)) {
+                    return_entry = 2;
+                } else if (std::get<1>(buttons[2]).getGlobalBounds().contains(mousePosF)) {
+                    return_entry = 3;
+                } else if (std::get<1>(buttons[3]).getGlobalBounds().contains(mousePosF)) {
+                    return_entry = 4;
+                }
+
+                break;
+            }
+            default:
+                break;
+            }
+        }
+
+        window.clear();
+
+        // pulsating effect of backgound
+        if (b_scale.x < 1.0f || b_scale.x > 1.2f) step *= -1;
+
+        b_scale.x += step;
+        b_scale.y += step;
+
+        background.setScale(b_scale);
+
+        float X = window.getSize().x;
+        float Y = window.getSize().y;
+
+        background.setPosition((X - X * (b_scale.x)) / 2, (Y - Y * (b_scale.y)) / 2);
+        // END
+        
+        window.draw(background);
+
+        for (auto&& i : buttons) {
+            window.draw(std::get<0>(i));
+            window.draw(std::get<1>(i));
+            window.draw(std::get<2>(i));
+        }
+
+        window.display();
+    }
+
+    return return_entry;
+}
+
+// Starting simulation
+void Application::simulate(sf::RenderWindow& window) {
+    sf::Texture texture;
+    texture.loadFromFile("textures/background.jpg");
+    sf::Sprite background(texture);
+    while (window.isOpen()) {
+        sf::Event event;
+        while (window.pollEvent(event)) {
+            if (event.type == sf::Event::Closed) window.close();
+        }
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::LControl) && sf::Keyboard::isKeyPressed(sf::Keyboard::Q)) window.close();
+
+        window.clear();
+        window.draw(background);
+
+        for (auto&& i : main_map) {
+            for (auto&& j : i) {
+                window.draw(j);
+            }
+        }
+
+        window.display();
     }
 }
 

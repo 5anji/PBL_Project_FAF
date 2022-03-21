@@ -19,7 +19,9 @@ class Application {
 public:
     Application(int, const char**);
     void modify_args(int, const char**);
-    void generate_map(sf::RenderWindow& window);
     int8_t start();
+    void generate_map(sf::RenderWindow& window);
+    uint8_t display_menu(sf::RenderWindow& window);
+    void simulate(sf::RenderWindow& window);
     ~Application();
 };
