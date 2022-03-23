@@ -9,8 +9,8 @@
 // Creating the object
 Application::Application(int argc, const char** argv)
         : video_mode(1024, 768)
-        , style(sf::Style::Default)
-        , title("Test")
+        , style(sf::Style::Close)
+        , title("AeroFly")
         , map_directory("maps/")
         , map_file("default.txt") {
     if (argc > 0) {
@@ -68,6 +68,7 @@ void Application::modify_args(int argc, const char** argv) {
 int8_t Application::start() {
     sf::RenderWindow window(video_mode, title, style, settings);
     window.setFramerateLimit(48);
+    window.setPosition(sf::Vector2<int>(20, 40));
 
     generate_map(window);
 
@@ -109,6 +110,7 @@ loop:
     }
 
     infile.close();
+
     // parsing characters to figures:
     sf::Vector2<float> pos(0, 0);
     float square_width = static_cast<float>(window.getSize().x) / static_cast<float>(map[0].size());
@@ -146,7 +148,6 @@ uint8_t Application::display_menu(sf::RenderWindow& window) {
     texture.loadFromFile("textures/menu-sky.jpg");
     texture.setSmooth(true);
     sf::Sprite background(texture);
-    background.setOrigin(window.getSize().x / 2, window.getSize().y / 2);
 
     std::vector<std::tuple<sf::RectangleShape, sf::RectangleShape, sf::Text>> buttons;
     const char* titles[] = {"Start Simulation", "Options", "Credits", "Exit"};
@@ -180,7 +181,7 @@ uint8_t Application::display_menu(sf::RenderWindow& window) {
     uint8_t return_entry = 0;
     float step = 0.0015f;
 
-    sf::Vector2<float> b_scale(1.0f, 1.0f);
+    sf::Vector2<float> b_scale(1.25f, 1.25f);
 
     while (window.isOpen() && !return_entry) {
         sf::Event Event;
@@ -229,7 +230,7 @@ uint8_t Application::display_menu(sf::RenderWindow& window) {
         window.clear();
 
         // pulsating effect of backgound
-        if (b_scale.x < 1.0f || b_scale.x > 1.2f) step *= -1;
+        if (b_scale.x < 1.0f || b_scale.x > 1.5f) step *= -1;
 
         b_scale.x += step;
         b_scale.y += step;
@@ -241,7 +242,7 @@ uint8_t Application::display_menu(sf::RenderWindow& window) {
 
         background.setPosition((X - X * (b_scale.x)) / 2, (Y - Y * (b_scale.y)) / 2);
         // END
-        
+
         window.draw(background);
 
         for (auto&& i : buttons) {
