@@ -149,6 +149,14 @@ uint8_t Application::display_menu(sf::RenderWindow& window) {
     texture.setSmooth(true);
     sf::Sprite background(texture);
 
+    sf::RectangleShape menu_title;
+    menu_title.setSize(sf::Vector2<float>(500, 250));
+    menu_title.setPosition(window.getSize().x / 2 - 250, 50);
+    sf::Texture icon;
+    icon.loadFromFile("textures/title.png");
+    icon.setSmooth(true);
+    menu_title.setTexture(&icon);
+
     std::vector<std::tuple<sf::RectangleShape, sf::RectangleShape, sf::Text>> buttons;
     const char* titles[] = {"Start Simulation", "Options", "Credits", "Exit"};
 
@@ -244,7 +252,7 @@ uint8_t Application::display_menu(sf::RenderWindow& window) {
         // END
 
         window.draw(background);
-
+        window.draw(menu_title);
         for (auto&& i : buttons) {
             window.draw(std::get<0>(i));
             window.draw(std::get<1>(i));
