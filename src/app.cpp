@@ -118,7 +118,7 @@ loop:
 
     for (size_t i = 0; i < map.size(); i++) {
         std::vector<sf::RectangleShape> temp;
-        pos.x = -20;
+        pos.x = 0;
         for (size_t j = 0; j < map[i].size(); j++) {
             sf::RectangleShape new_square;
             /// @todo: make available for other characters on the map
