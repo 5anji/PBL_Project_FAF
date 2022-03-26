@@ -12,15 +12,17 @@ class Application {
     const char* title;
     const std::string map_directory;
     std::string map_file;
+    std::string forecast_file;
     std::string args;
-    std::vector<std::string> map;
-    std::vector<std::vector<sf::RectangleShape>> main_map;
+    std::vector<std::vector<sf::RectangleShape>> map;
+    std::vector<std::vector<sf::RectangleShape>> forecast;
 
 public:
     Application(int, const char**);
     void modify_args(int, const char**);
     int8_t start();
     void generate_map(sf::RenderWindow& window);
+    void generate_forecast(sf::RenderWindow& window);
     uint8_t display_menu(sf::RenderWindow& window);
     void simulate(sf::RenderWindow& window);
     ~Application();

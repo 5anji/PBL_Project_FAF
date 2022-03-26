@@ -12,7 +12,8 @@ Application::Application(int argc, const char** argv)
         , style(sf::Style::Close)
         , title("AeroFly")
         , map_directory("maps/")
-        , map_file("default.txt") {
+        , map_file("default.txt")
+        , forecast_file("forecast.txt") {
     if (argc > 0) {
         modify_args(argc, argv);
     }
@@ -54,7 +55,11 @@ void Application::modify_args(int argc, const char** argv) {
             }
             break;
         case str2int("-f"):
-            // std::cout << argv[i] << std::endl;
+            if ((i + 1) < argc) {
+                forecast_file = argv[i + 1];
+            } else {
+                std::cout << "Invalid expression. Using default map" << std::endl;
+            }
             break;
         case str2int("-h"):
         default:
@@ -71,6 +76,7 @@ int8_t Application::start() {
     window.setPosition(sf::Vector2<int>(20, 40));
 
     generate_map(window);
+    generate_forecast(window);
 
     uint8_t entry = display_menu(window);
 
@@ -92,6 +98,7 @@ int8_t Application::start() {
 
 // Generating map from file
 void Application::generate_map(sf::RenderWindow& window) {
+    std::vector<std::string> from_file;
 loop:
     std::ifstream infile;
     infile.open(map_directory + map_file, std::ios::out);
@@ -99,7 +106,7 @@ loop:
         std::string temp;
         uint8_t i = 0;
         while (getline(infile, temp)) {
-            map.push_back(temp);
+            from_file.push_back(temp);
             i++;
         }
     } else {
@@ -113,16 +120,16 @@ loop:
 
     // parsing characters to figures:
     sf::Vector2<float> pos(0, 0);
-    float square_width = static_cast<float>(window.getSize().x) / static_cast<float>(map[0].size());
-    float square_height = static_cast<float>(window.getSize().y) / static_cast<float>(map.size());
+    float square_width = static_cast<float>(window.getSize().x) / static_cast<float>(from_file[0].size());
+    float square_height = static_cast<float>(window.getSize().y) / static_cast<float>(from_file.size());
 
-    for (size_t i = 0; i < map.size(); i++) {
+    for (size_t i = 0; i < from_file.size(); i++) {
         std::vector<sf::RectangleShape> temp;
         pos.x = 0;
-        for (size_t j = 0; j < map[i].size(); j++) {
+        for (size_t j = 0; j < from_file[i].size(); j++) {
             sf::RectangleShape new_square;
             /// @todo: make available for other characters on the map
-            if (map[i][j] == '*') {
+            if (from_file[i][j] == '*') {
                 new_square.setFillColor(sf::Color(58, 46, 39));
             } else {
                 new_square.setFillColor(sf::Color(0, 0, 0, 0));
@@ -134,7 +141,56 @@ loop:
             temp.push_back(new_square);
         }
         pos.y += square_height;
-        main_map.push_back(temp);
+        map.push_back(temp);
+    }
+}
+
+// Generating forecast from file
+void Application::generate_forecast(sf::RenderWindow& window) {
+loop:
+    std::vector<std::string> from_file;
+    std::ifstream infile;
+    infile.open(map_directory + forecast_file, std::ios::out);
+    if (infile.is_open()) {
+        std::string temp;
+        uint8_t i = 0;
+        while (getline(infile, temp)) {
+            from_file.push_back(temp);
+            i++;
+        }
+    } else {
+        std::cout << "Error loading map. Using default one" << std::endl;
+        map_file = "default.txt";
+        infile.close();
+        goto loop;
+    }
+
+    infile.close();
+
+    // parsing characters to figures:
+    sf::Vector2<float> pos(0, 0);
+    float square_width = static_cast<float>(window.getSize().x) / static_cast<float>(from_file[0].size());
+    float square_height = static_cast<float>(window.getSize().y) / static_cast<float>(from_file.size());
+
+    for (size_t i = 0; i < from_file.size(); i++) {
+        std::vector<sf::RectangleShape> temp;
+        pos.x = 0;
+        for (size_t j = 0; j < from_file[i].size(); j++) {
+            sf::RectangleShape new_square;
+            /// @todo: make available for other characters on the map
+            if (from_file[i][j] == '#') {
+                new_square.setFillColor(sf::Color(0, 0, 0, 127));
+            } else {
+                new_square.setFillColor(sf::Color(0, 0, 0, 0));
+            }
+            new_square.setPosition(pos);
+            new_square.setSize(sf::Vector2<float>(square_width, square_height));
+
+            pos.x += square_width;
+            temp.push_back(new_square);
+        }
+        pos.y += square_height;
+        forecast.push_back(temp);
     }
 }
 
@@ -280,7 +336,13 @@ void Application::simulate(sf::RenderWindow& window) {
         window.clear();
         window.draw(background);
 
-        for (auto&& i : main_map) {
+        for (auto&& i : map) {
+            for (auto&& j : i) {
+                window.draw(j);
+            }
+        }
+
+        for (auto&& i : forecast) {
             for (auto&& j : i) {
                 window.draw(j);
             }
