@@ -130,7 +130,9 @@ loop:
             sf::RectangleShape new_square;
             /// @todo: make available for other characters on the map
             if (from_file[i][j] == '*') {
-                new_square.setFillColor(sf::Color(58, 46, 39));
+                new_square.setFillColor(sf::Color(34,139,34));
+            } else if (from_file[i][j] == '^') {
+                new_square.setFillColor(sf::Color(192, 192, 192));
             } else {
                 new_square.setFillColor(sf::Color(0, 0, 0, 0));
             }
