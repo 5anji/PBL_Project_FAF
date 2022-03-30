@@ -130,7 +130,7 @@ loop:
             sf::RectangleShape new_square;
             /// @todo: make available for other characters on the map
             if (from_file[i][j] == '*') {
-                new_square.setFillColor(sf::Color(34,139,34));
+                new_square.setFillColor(sf::Color(34, 139, 34));
             } else if (from_file[i][j] == '^') {
                 new_square.setFillColor(sf::Color(192, 192, 192));
             } else {
@@ -199,7 +199,7 @@ loop:
 // Display the startup menu
 uint8_t Application::display_menu(sf::RenderWindow& window) {
     sf::Font font;
-    if (!font.loadFromFile("fonts/DisposableDroidBB.ttf"))
+    if (!font.loadFromFile("fonts/Corbel.ttf"))
         std::cout << "Can't find the font file" << std::endl;
 
     sf::Texture texture;
@@ -228,15 +228,15 @@ uint8_t Application::display_menu(sf::RenderWindow& window) {
         overlay.setSize(button.getSize());
         button.setPosition(position);
         overlay.setPosition(button.getPosition());
-        button.setFillColor(sf::Color(0, 191, 255));
+        button.setFillColor(sf::Color(37, 114, 203));
         overlay.setFillColor(sf::Color(0, 0, 0, 0));
 
         sf::Text text;
         text.setFont(font);
         text.setStyle(sf::Text::Bold);
         text.setString(titles[i]);
-        text.setFillColor(sf::Color::Black);
-        text.setCharacterSize(48);
+        text.setFillColor(sf::Color::White);
+        text.setCharacterSize(36);
         sf::FloatRect textRect = text.getLocalBounds();
         text.setOrigin(textRect.left + textRect.width / 2, textRect.top + textRect.height / 2);
         text.setPosition(position.x + 175, position.y + 22.5f);
@@ -261,9 +261,9 @@ uint8_t Application::display_menu(sf::RenderWindow& window) {
                 sf::Vector2f mousePosF(static_cast<float>(mousePos.x), static_cast<float>(mousePos.y));
                 for (auto&& i : buttons) {
                     if (std::get<1>(i).getGlobalBounds().contains(mousePosF)) {
-                        std::get<1>(i).setFillColor(sf::Color(255, 255, 255, 85.33f));
+                        std::get<1>(i).setFillColor(sf::Color(255, 255, 255, 63.f));
                         std::get<1>(i).setOutlineThickness(3);
-                        std::get<1>(i).setOutlineColor(sf::Color(255, 0, 0));
+                        std::get<1>(i).setOutlineColor(sf::Color(112, 112, 112));
                     } else {
                         std::get<1>(i).setFillColor(sf::Color(0, 0, 0, 0));
                         std::get<1>(i).setOutlineThickness(0);
