@@ -78,20 +78,27 @@ int8_t Application::start() {
     generate_map(window);
     generate_forecast(window);
 
-    uint8_t entry = display_menu(window);
+    bool exit_signal = true;
 
-    switch (entry) {
-    case 1:
-        simulate(window);
-        break;
-    case 2:
-        break;
-    case 3:
-        break;
-    case 4:
-    default:
-        break;
-    }
+    do {
+        uint8_t entry = display_menu(window);
+
+        switch (entry) {
+        case 1:
+            simulate(window);
+            break;
+        case 2:
+            break;
+        case 3:
+            display_credits(window);
+            break;
+        case 4:
+            exit_signal = false;
+            break;
+        default:
+            break;
+        }
+    } while (exit_signal);
 
     return 0;
 }
@@ -128,14 +135,19 @@ loop:
         pos.x = 0;
         for (size_t j = 0; j < from_file[i].size(); j++) {
             sf::RectangleShape new_square;
-            /// @todo: make available for other characters on the map
-            if (from_file[i][j] == '*') {
+
+            switch (from_file[i][j]) {
+            case '*':
                 new_square.setFillColor(sf::Color(34, 139, 34));
-            } else if (from_file[i][j] == '^') {
+                break;
+            case '^':
                 new_square.setFillColor(sf::Color(192, 192, 192));
-            } else {
-                new_square.setFillColor(sf::Color(0, 0, 0, 0));
+                break;
+            default:
+                new_square.setFillColor(sf::Color(0, 68, 148));
+                break;
             }
+
             new_square.setPosition(pos);
             new_square.setSize(sf::Vector2<float>(square_width, square_height));
 
@@ -179,11 +191,13 @@ loop:
         pos.x = 0;
         for (size_t j = 0; j < from_file[i].size(); j++) {
             sf::RectangleShape new_square;
-            /// @todo: make available for other characters on the map
-            if (from_file[i][j] == '#') {
+            switch (from_file[i][j]) {
+            case '#':
                 new_square.setFillColor(sf::Color(0, 0, 0, 127));
-            } else {
+                break;
+            default:
                 new_square.setFillColor(sf::Color(0, 0, 0, 0));
+                break;
             }
             new_square.setPosition(pos);
             new_square.setSize(sf::Vector2<float>(square_width, square_height));
@@ -254,7 +268,7 @@ uint8_t Application::display_menu(sf::RenderWindow& window) {
         while (window.pollEvent(Event)) {
             switch (Event.type) {
             case sf::Event::Closed:
-                window.close();
+                return_entry = 4;
                 break;
             case sf::Event::MouseMoved: {
                 sf::Vector2i mousePos = sf::Mouse::getPosition(window);
@@ -276,14 +290,11 @@ uint8_t Application::display_menu(sf::RenderWindow& window) {
             case sf::Event::MouseButtonPressed: {
                 sf::Vector2i mousePos = sf::Mouse::getPosition(window);
                 sf::Vector2f mousePosF(static_cast<float>(mousePos.x), static_cast<float>(mousePos.y));
-                if (std::get<1>(buttons[0]).getGlobalBounds().contains(mousePosF)) {
-                    return_entry = 1;
-                } else if (std::get<1>(buttons[1]).getGlobalBounds().contains(mousePosF)) {
-                    return_entry = 2;
-                } else if (std::get<1>(buttons[2]).getGlobalBounds().contains(mousePosF)) {
-                    return_entry = 3;
-                } else if (std::get<1>(buttons[3]).getGlobalBounds().contains(mousePosF)) {
-                    return_entry = 4;
+
+                for (size_t i = 0; i < 4; i++) {
+                    if (std::get<1>(buttons[i]).getGlobalBounds().contains(mousePosF)) {
+                        return_entry = i + 1;
+                    }
                 }
 
                 break;
@@ -292,6 +303,7 @@ uint8_t Application::display_menu(sf::RenderWindow& window) {
                 break;
             }
         }
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::LControl) && sf::Keyboard::isKeyPressed(sf::Keyboard::Q)) return_entry = 4;
 
         window.clear();
 
@@ -325,18 +337,74 @@ uint8_t Application::display_menu(sf::RenderWindow& window) {
 
 // Starting simulation
 void Application::simulate(sf::RenderWindow& window) {
-    sf::Texture texture;
-    texture.loadFromFile("textures/background.jpg");
-    sf::Sprite background(texture);
-    while (window.isOpen()) {
+    sf::Font font;
+    if (!font.loadFromFile("fonts/NotoSans-Regular.ttf"))
+        std::cout << "Can't find the font file" << std::endl;
+    sf::RectangleShape button;
+    sf::RectangleShape overlay;
+    sf::Vector2<float> size(50, 30);
+    sf::Vector2<float> position(10, 10);
+
+    button.setSize(size);
+    overlay.setSize(size);
+    button.setPosition(position);
+    overlay.setPosition(position);
+    button.setFillColor(sf::Color(255, 255, 255, 63.f));
+    overlay.setFillColor(sf::Color(0, 0, 0, 0.5f));
+    
+    sf::Text text;
+    text.setFont(font);
+    text.setString("Back");
+    text.setStyle(sf::Text::Bold);
+    text.setFillColor(sf::Color(255, 255, 255, 63.f));
+    text.setCharacterSize(18);
+    sf::FloatRect textRect = text.getLocalBounds();
+    text.setOrigin(textRect.left + textRect.width / 2, textRect.top + textRect.height / 2);
+    text.setPosition(position.x + 25, position.y + 15);
+
+    bool breaker = true;
+
+    while (window.isOpen() && breaker) {
         sf::Event event;
         while (window.pollEvent(event)) {
-            if (event.type == sf::Event::Closed) window.close();
+            switch (event.type) {
+            case sf::Event::Closed:
+                breaker = false;
+                break;
+            case sf::Event::MouseMoved: {
+                sf::Vector2i mousePos = sf::Mouse::getPosition(window);
+                sf::Vector2f mousePosF(static_cast<float>(mousePos.x), static_cast<float>(mousePos.y));
+                if (overlay.getGlobalBounds().contains(mousePosF)) {
+                    overlay.setFillColor(sf::Color(255, 255, 255, 63.f));
+                    overlay.setOutlineThickness(3);
+                    overlay.setOutlineColor(sf::Color(112, 112, 112));
+                    text.setFillColor(sf::Color(255, 255, 255, 255.f));
+                } else {
+                    overlay.setFillColor(sf::Color(0, 0, 0, 0));
+                    overlay.setOutlineThickness(0);
+                    overlay.setOutlineColor(sf::Color(0, 0, 0, 0));
+                    text.setFillColor(sf::Color(255, 255, 255, 63.f));
+                }
+
+                break;
+            }
+            case sf::Event::MouseButtonPressed: {
+                sf::Vector2i mousePos = sf::Mouse::getPosition(window);
+                sf::Vector2f mousePosF(static_cast<float>(mousePos.x), static_cast<float>(mousePos.y));
+
+                if (overlay.getGlobalBounds().contains(mousePosF))
+                    breaker = false;
+
+                break;
+            }
+            default:
+                break;
+            }
         }
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::LControl) && sf::Keyboard::isKeyPressed(sf::Keyboard::Q)) window.close();
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::LControl) && sf::Keyboard::isKeyPressed(sf::Keyboard::Q)) breaker = false;
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::BackSpace)) breaker = false;
 
         window.clear();
-        window.draw(background);
 
         for (auto&& i : map) {
             for (auto&& j : i) {
@@ -349,6 +417,51 @@ void Application::simulate(sf::RenderWindow& window) {
                 window.draw(j);
             }
         }
+
+        window.draw(button);
+        window.draw(overlay);
+        window.draw(text);
+
+        window.display();
+    }
+}
+
+// Displaying info about creators
+void Application::display_credits(sf::RenderWindow& window) {
+    std::wstring credits = L"AeroFly - a project that has the goal to show how the air traffic is managed when it have to pass through bad weather conditions. The creators are young students of the 1st Course at Software Engineering, FAF-213. \n\n\tCreators: \nGîtlan Gabriel (Architector)\nMaria Afteni (Leader)\nIațco Sorin\nGuțu Dinu\nGolban Beatrice\nChihai Nichita";
+    // std::cout << credits << std::endl;
+    sf::Font font;
+
+    if (!font.loadFromFile("fonts/NotoSans-Regular.ttf"))
+        std::cout << "Can't find the font file" << std::endl;
+
+    sf::Text text;
+    text.setFont(font);
+    text.setString(credits);
+    text.setStyle(sf::Text::Bold);
+    text.setFillColor(sf::Color(0, 0, 0));
+    text.setCharacterSize(18);
+
+    bool breaker = true;
+
+    while (window.isOpen() && breaker) {
+        sf::Event event;
+        while (window.pollEvent(event)) {
+            switch (event.type) {
+            case sf::Event::Closed:
+                breaker = false;
+                break;
+            default:
+                break;
+            }
+        }
+        
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::LControl) && sf::Keyboard::isKeyPressed(sf::Keyboard::Q)) breaker = false;
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::BackSpace)) breaker = false;
+
+        window.clear(sf::Color::White);
+
+        window.draw(text);
 
         window.display();
     }

@@ -25,5 +25,6 @@ public:
     void generate_forecast(sf::RenderWindow& window);
     uint8_t display_menu(sf::RenderWindow& window);
     void simulate(sf::RenderWindow& window);
+    void display_credits(sf::RenderWindow& window);
     ~Application();
 };
