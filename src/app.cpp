@@ -32,11 +32,14 @@ void Application::modify_args(int argc, const char** argv) {
                     uint16_t temp_width = std::stoi(square_width);
                     uint16_t temp_height = std::stoi(square_height);
 
-                    if ((temp_width >= 200) && (temp_height >= 200)) {
+                    float report = static_cast<float>(temp_width) / static_cast<float>(temp_height);
+                    bool rep_condition = (temp_width >= 200) && (temp_height >= 200) && (0.5f < report) && (report < 2.f);
+
+                    if (rep_condition) {
                         video_mode.width = temp_width;
                         video_mode.height = temp_height;
                     } else {
-                        std::cout << "Too small window size. Using 1024x768" << std::endl;
+                        std::cout << "Inacceptable window size. Using 1024x768" << std::endl;
                     }
 
                 } else {
@@ -87,8 +90,12 @@ int8_t Application::start() {
         case 1:
             simulate(window);
             break;
-        case 2:
-            break;
+        case 2: {
+            map.clear();
+            forecast.clear();
+            generate_map(window);
+            generate_forecast(window);
+        } break;
         case 3:
             display_credits(window);
             break;
@@ -230,7 +237,7 @@ uint8_t Application::display_menu(sf::RenderWindow& window) {
     menu_title.setTexture(&icon);
 
     std::vector<std::tuple<sf::RectangleShape, sf::RectangleShape, sf::Text>> buttons;
-    const char* titles[] = {"Start Simulation", "Options", "Credits", "Exit"};
+    const char* titles[] = {"Start Simulation", "Reload Map", "Credits", "Exit"};
 
     for (size_t i = 0; i < 4; i++) {
         sf::RectangleShape button;
@@ -351,7 +358,7 @@ void Application::simulate(sf::RenderWindow& window) {
     overlay.setPosition(position);
     button.setFillColor(sf::Color(255, 255, 255, 63.f));
     overlay.setFillColor(sf::Color(0, 0, 0, 0.5f));
-    
+
     sf::Text text;
     text.setFont(font);
     text.setString("Back");
@@ -428,21 +435,65 @@ void Application::simulate(sf::RenderWindow& window) {
 
 // Displaying info about creators
 void Application::display_credits(sf::RenderWindow& window) {
-    std::wstring credits = L"AeroFly - a project that has the goal to show how the air traffic is managed when it have to pass through bad weather conditions. The creators are young students of the 1st Course at Software Engineering, FAF-213. \n\n\tCreators: \nGîtlan Gabriel (Architector)\nMaria Afteni (Leader)\nIațco Sorin\nGuțu Dinu\nGolban Beatrice\nChihai Nichita";
-    // std::cout << credits << std::endl;
+    std::wstring credits = L"AeroFly - a project that has the goal to show how the air traffic is managed\nwhen it has to pass through bad weather conditions. The creators are young\n\t\tstudents of the 1st Course at Software Engineering, FAF-213. \n\n\t\t\t\t\t\t\t\t\t\t\t\tCreators: \n\t\t\t\t\t\t\t\t\t - Gîtlan Gabriel (Architector)\n\t\t\t\t\t\t\t\t\t - Maria Afteni (Leader)\n\t\t\t\t\t\t\t\t\t - Iațco Sorin\n\t\t\t\t\t\t\t\t\t - Guțu Dinu\n\t\t\t\t\t\t\t\t\t - Golban Beatrice\n\t\t\t\t\t\t\t\t\t - Chihai Nichita";
+    // std::wcout << credits << std::endl;
     sf::Font font;
 
     if (!font.loadFromFile("fonts/NotoSans-Regular.ttf"))
         std::cout << "Can't find the font file" << std::endl;
 
+    sf::RectangleShape border;
+    sf::Vector2<float> credits_size(750, 400);
+    sf::Vector2<float> credits_position(window.getSize().x / 2 - 375, window.getSize().y / 2 - 200);
+
+    border.setSize(credits_size);
+    border.setPosition(credits_position);
+    border.setOutlineThickness(3);
+    border.setOutlineColor(sf::Color(37, 114, 203));
+    border.setFillColor(sf::Color(255, 255, 255, 127.f));
+
     sf::Text text;
     text.setFont(font);
-    text.setString(credits);
     text.setStyle(sf::Text::Bold);
+    text.setString(credits);
     text.setFillColor(sf::Color(0, 0, 0));
     text.setCharacterSize(18);
 
+    sf::FloatRect textRect = text.getLocalBounds();
+    text.setOrigin(textRect.left + textRect.width / 2, textRect.top + textRect.height / 2);
+    text.setPosition(credits_position.x + 375, credits_position.y + 200);
+
+    sf::RectangleShape button;
+    sf::RectangleShape overlay;
+    sf::Vector2<float> size(30, 30);
+    sf::Vector2<float> position(credits_position.x - 40, credits_position.y - 40);
+
+    button.setSize(size);
+    overlay.setSize(size);
+    button.setPosition(position);
+    overlay.setPosition(position);
+    button.setFillColor(sf::Color(255, 255, 255, 0.f));
+    overlay.setFillColor(sf::Color(0, 0, 0, 0.f));
+
+    sf::Text title;
+    title.setFont(font);
+    title.setString("X");
+    title.setStyle(sf::Text::Bold);
+    title.setFillColor(sf::Color(0, 0, 0));
+    title.setCharacterSize(18);
+    sf::FloatRect temp = title.getLocalBounds();
+    title.setOrigin(temp.left + temp.width / 2, temp.top + temp.height / 2);
+    title.setPosition(position.x + 15, position.y + 15);
+
     bool breaker = true;
+    sf::Texture texture;
+    texture.loadFromFile("textures/menu-sky.jpg");
+    texture.setSmooth(true);
+    sf::Sprite background(texture);
+
+    float step = 0.0015f;
+
+    sf::Vector2<float> b_scale(1.25f, 1.25f);
 
     while (window.isOpen() && breaker) {
         sf::Event event;
@@ -451,16 +502,59 @@ void Application::display_credits(sf::RenderWindow& window) {
             case sf::Event::Closed:
                 breaker = false;
                 break;
+            case sf::Event::MouseMoved: {
+                sf::Vector2i mousePos = sf::Mouse::getPosition(window);
+                sf::Vector2f mousePosF(static_cast<float>(mousePos.x), static_cast<float>(mousePos.y));
+                if (overlay.getGlobalBounds().contains(mousePosF)) {
+                    overlay.setFillColor(sf::Color(255, 255, 255, 63.f));
+                    overlay.setOutlineThickness(3);
+                    overlay.setOutlineColor(sf::Color(37, 114, 203));
+                } else {
+                    overlay.setFillColor(sf::Color(0, 0, 0, 0));
+                    overlay.setOutlineThickness(0);
+                    overlay.setOutlineColor(sf::Color(0, 0, 0, 0));
+                }
+
+                break;
+            }
+            case sf::Event::MouseButtonPressed: {
+                sf::Vector2i mousePos = sf::Mouse::getPosition(window);
+                sf::Vector2f mousePosF(static_cast<float>(mousePos.x), static_cast<float>(mousePos.y));
+
+                if (overlay.getGlobalBounds().contains(mousePosF))
+                    breaker = false;
+
+                break;
+            }
             default:
                 break;
             }
         }
-        
+
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::LControl) && sf::Keyboard::isKeyPressed(sf::Keyboard::Q)) breaker = false;
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::BackSpace)) breaker = false;
 
-        window.clear(sf::Color::White);
+        window.clear();
 
+        // pulsating effect of backgound
+        if (b_scale.x < 1.0f || b_scale.x > 1.5f) step *= -1;
+
+        b_scale.x += step;
+        b_scale.y += step;
+
+        background.setScale(b_scale);
+
+        float X = window.getSize().x;
+        float Y = window.getSize().y;
+
+        background.setPosition((X - X * (b_scale.x)) / 2, (Y - Y * (b_scale.y)) / 2);
+        // END
+
+        window.draw(background);
+        window.draw(button);
+        window.draw(overlay);
+        window.draw(title);
+        window.draw(border);
         window.draw(text);
 
         window.display();
