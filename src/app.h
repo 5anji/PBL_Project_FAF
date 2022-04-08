@@ -21,10 +21,10 @@ public:
     Application(int, const char**);
     void modify_args(int, const char**);
     int8_t start();
-    void generate_map(sf::RenderWindow& window);
-    void generate_forecast(sf::RenderWindow& window);
-    uint8_t display_menu(sf::RenderWindow& window);
-    void simulate(sf::RenderWindow& window);
-    void display_credits(sf::RenderWindow& window);
+    void generate_map(sf::RenderWindow&);
+    void generate_forecast(sf::RenderWindow&);
+    uint8_t display_menu(sf::RenderWindow&);
+    void simulate(sf::RenderWindow&);
+    void display_credits(sf::RenderWindow&);
     ~Application();
 };
