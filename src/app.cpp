@@ -148,7 +148,7 @@ loop:
                 new_square.setFillColor(sf::Color(34, 139, 34));
                 break;
             case '^':
-                new_square.setFillColor(sf::Color(192, 192, 192));
+                new_square.setFillColor(sf::Color(250,240,230)); // linen(brown)
                 break;
             default:
                 new_square.setFillColor(sf::Color(0, 68, 148));
