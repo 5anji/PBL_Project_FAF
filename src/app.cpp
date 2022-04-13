@@ -78,8 +78,8 @@ int8_t Application::start() {
     window.setFramerateLimit(48);
     window.setPosition(sf::Vector2<int>(20, 40));
 
-    generate_map(window);
-    generate_forecast(window);
+    map = Map(window, map_directory, map_file);
+    forecast = Forecast(window, map_directory, forecast_file);
 
     bool exit_signal = true;
 
@@ -91,10 +91,10 @@ int8_t Application::start() {
             simulate(window);
             break;
         case 2: {
-            map.clear();
-            forecast.clear();
-            generate_map(window);
-            generate_forecast(window);
+            map.get().clear();
+            forecast.get().clear();
+            map = Map(window, map_directory, map_file);
+            forecast = Forecast(window, map_directory, forecast_file);
         } break;
         case 3:
             display_credits(window);
@@ -108,113 +108,6 @@ int8_t Application::start() {
     } while (exit_signal);
 
     return 0;
-}
-
-// Generating map from file
-void Application::generate_map(sf::RenderWindow& window) {
-    std::vector<std::string> from_file;
-loop:
-    std::ifstream infile;
-    infile.open(map_directory + map_file, std::ios::out);
-    if (infile.is_open()) {
-        std::string temp;
-        uint8_t i = 0;
-        while (getline(infile, temp)) {
-            from_file.push_back(temp);
-            i++;
-        }
-    } else {
-        std::cout << "Error loading map. Using default one" << std::endl;
-        map_file = "default.txt";
-        infile.close();
-        goto loop;
-    }
-
-    infile.close();
-
-    // parsing characters to figures:
-    sf::Vector2<float> pos(0, 0);
-    float square_width = static_cast<float>(window.getSize().x) / static_cast<float>(from_file[0].size());
-    float square_height = static_cast<float>(window.getSize().y) / static_cast<float>(from_file.size());
-
-    for (size_t i = 0; i < from_file.size(); i++) {
-        std::vector<sf::RectangleShape> temp;
-        pos.x = 0;
-        for (size_t j = 0; j < from_file[i].size(); j++) {
-            sf::RectangleShape new_square;
-
-            switch (from_file[i][j]) {
-            case '*':
-                new_square.setFillColor(sf::Color(34, 139, 34));
-                break;
-            case '^':
-                new_square.setFillColor(sf::Color(250,240,230)); // linen(brown)
-                break;
-            default:
-                new_square.setFillColor(sf::Color(0, 68, 148));
-                break;
-            }
-
-            new_square.setPosition(pos);
-            new_square.setSize(sf::Vector2<float>(square_width, square_height));
-
-            pos.x += square_width;
-            temp.push_back(new_square);
-        }
-        pos.y += square_height;
-        map.push_back(temp);
-    }
-}
-
-// Generating forecast from file
-void Application::generate_forecast(sf::RenderWindow& window) {
-loop:
-    std::vector<std::string> from_file;
-    std::ifstream infile;
-    infile.open(map_directory + forecast_file, std::ios::out);
-    if (infile.is_open()) {
-        std::string temp;
-        uint8_t i = 0;
-        while (getline(infile, temp)) {
-            from_file.push_back(temp);
-            i++;
-        }
-    } else {
-        std::cout << "Error loading map. Using default one" << std::endl;
-        map_file = "default.txt";
-        infile.close();
-        goto loop;
-    }
-
-    infile.close();
-
-    // parsing characters to figures:
-    sf::Vector2<float> pos(0, 0);
-    float square_width = static_cast<float>(window.getSize().x) / static_cast<float>(from_file[0].size());
-    float square_height = static_cast<float>(window.getSize().y) / static_cast<float>(from_file.size());
-
-    for (size_t i = 0; i < from_file.size(); i++) {
-        std::vector<sf::RectangleShape> temp;
-        pos.x = 0;
-        for (size_t j = 0; j < from_file[i].size(); j++) {
-            sf::RectangleShape new_square;
-            switch (from_file[i][j]) {
-            case '#':
-                new_square.setFillColor(sf::Color(0, 0, 0, 127));
-                break;
-            default:
-                new_square.setFillColor(sf::Color(0, 0, 0, 0));
-                break;
-            }
-            new_square.setPosition(pos);
-            new_square.setSize(sf::Vector2<float>(square_width, square_height));
-
-            pos.x += square_width;
-            temp.push_back(new_square);
-        }
-        pos.y += square_height;
-        forecast.push_back(temp);
-    }
 }
 
 // Display the startup menu
@@ -237,7 +130,7 @@ uint8_t Application::display_menu(sf::RenderWindow& window) {
     menu_title.setTexture(&icon);
 
     std::vector<std::tuple<sf::RectangleShape, sf::RectangleShape, sf::Text>> buttons;
-    const char* titles[] = {"Start Simulation", "Reload Map", "Credits", "Exit"};
+    const char* titles[] = {"Start Simulation", "Reload Files", "Credits", "Exit"};
 
     for (size_t i = 0; i < 4; i++) {
         sf::RectangleShape button;
@@ -413,13 +306,13 @@ void Application::simulate(sf::RenderWindow& window) {
 
         window.clear();
 
-        for (auto&& i : map) {
+        for (auto&& i : map.get()) {
             for (auto&& j : i) {
                 window.draw(j);
             }
         }
 
-        for (auto&& i : forecast) {
+        for (auto&& i : forecast.get()) {
             for (auto&& j : i) {
                 window.draw(j);
             }

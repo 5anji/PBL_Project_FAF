@@ -1,4 +1,7 @@
 #pragma once
+#include "forecast.h"
+#include "map.h"
+
 #include <SFML/Graphics.hpp>
 #include <SFML/Window.hpp>
 #include <iostream>
@@ -14,15 +17,13 @@ class Application {
     std::string map_file;
     std::string forecast_file;
     std::string args;
-    std::vector<std::vector<sf::RectangleShape>> map;
-    std::vector<std::vector<sf::RectangleShape>> forecast;
+    Map map;
+    Forecast forecast;
 
 public:
     Application(int, const char**);
     void modify_args(int, const char**);
     int8_t start();
-    void generate_map(sf::RenderWindow&);
-    void generate_forecast(sf::RenderWindow&);
     uint8_t display_menu(sf::RenderWindow&);
     void simulate(sf::RenderWindow&);
     void display_credits(sf::RenderWindow&);
