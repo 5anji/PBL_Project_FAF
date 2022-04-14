@@ -13,7 +13,9 @@ Application::Application(int argc, const char** argv)
         , title("AeroFly")
         , map_directory("maps/")
         , map_file("default.txt")
-        , forecast_file("forecast.txt") {
+        , forecast_file("forecast->txt")
+        , map(nullptr)
+        , forecast(nullptr) {
     if (argc > 0) {
         modify_args(argc, argv);
     }
@@ -78,8 +80,8 @@ int8_t Application::start() {
     window.setFramerateLimit(48);
     window.setPosition(sf::Vector2<int>(20, 40));
 
-    map = Map(window, map_directory, map_file);
-    forecast = Forecast(window, map_directory, forecast_file);
+    map = new Map(window, map_directory, map_file);
+    forecast = new Forecast(window, map_directory, forecast_file);
 
     bool exit_signal = true;
 
@@ -91,10 +93,10 @@ int8_t Application::start() {
             simulate(window);
             break;
         case 2: {
-            map.get().clear();
-            forecast.get().clear();
-            map = Map(window, map_directory, map_file);
-            forecast = Forecast(window, map_directory, forecast_file);
+            map->get().clear();
+            forecast->get().clear();
+            map = new Map(window, map_directory, map_file);
+            forecast = new Forecast(window, map_directory, forecast_file);
         } break;
         case 3:
             display_credits(window);
@@ -306,13 +308,13 @@ void Application::simulate(sf::RenderWindow& window) {
 
         window.clear();
 
-        for (auto&& i : map.get()) {
+        for (auto&& i : map->get()) {
             for (auto&& j : i) {
                 window.draw(j);
             }
         }
 
-        for (auto&& i : forecast.get()) {
+        for (auto&& i : forecast->get()) {
             for (auto&& j : i) {
                 window.draw(j);
             }
@@ -457,4 +459,6 @@ void Application::display_credits(sf::RenderWindow& window) {
 // Destroying the object
 Application::~Application() {
     std::cout << "Exited the app" << std::endl;
+    delete map;
+    delete forecast;
 }

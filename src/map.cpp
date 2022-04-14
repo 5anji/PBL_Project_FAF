@@ -61,8 +61,8 @@ loop:
         map.push_back(temp);
     }
 }
-void Map::operator=(Map copy) {
-    map = copy.get();
+void Map::operator=(Map* copy) {
+    map = copy->get();
 }
 
 std::vector<std::vector<sf::RectangleShape>>& Map::get() {

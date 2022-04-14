@@ -12,6 +12,6 @@ public:
     Map();
     Map(const Map&);
     Map(sf::RenderWindow&, const std::string, std::string);
-    void operator=(Map);
+    void operator=(Map*);
     std::vector<std::vector<sf::RectangleShape>>& get();
 };
