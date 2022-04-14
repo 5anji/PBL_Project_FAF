@@ -13,7 +13,7 @@ Application::Application(int argc, const char** argv)
         , title("AeroFly")
         , map_directory("maps/")
         , map_file("default.txt")
-        , forecast_file("forecast->txt")
+        , forecast_file("forecast.txt")
         , map(nullptr)
         , forecast(nullptr) {
     if (argc > 0) {
