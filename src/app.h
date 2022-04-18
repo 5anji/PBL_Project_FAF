@@ -21,8 +21,7 @@ class Application {
     Forecast forecast;
 
 public:
-    Application(int, const char**);
-    void modify_args(int, const char**);
+    Application(uint16_t, uint16_t, std::string&, std::string&);
     int8_t start();
     uint8_t display_menu(sf::RenderWindow&);
     void simulate(sf::RenderWindow&);
