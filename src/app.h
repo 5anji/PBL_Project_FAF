@@ -17,8 +17,8 @@ class Application {
     std::string map_file;
     std::string forecast_file;
     std::string args;
-    Map* map;
-    Forecast* forecast;
+    Map map;
+    Forecast forecast;
 
 public:
     Application(int, const char**);

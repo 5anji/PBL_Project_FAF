@@ -12,6 +12,6 @@ public:
     Forecast();
     Forecast(const Forecast&);
     Forecast(sf::RenderWindow&, const std::string, std::string);
-    void operator=(Forecast);
+    void operator=(const Forecast&);
     std::vector<std::vector<sf::RectangleShape>>& get();
 };

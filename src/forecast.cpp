@@ -56,8 +56,8 @@ loop:
         forecast.push_back(temp);
     }
 }
-void Forecast::operator=(Forecast copy) {
-    forecast = copy.get();
+void Forecast::operator=(const Forecast& copy) {
+    forecast = const_cast<Forecast&>(copy).get();
 }
 
 std::vector<std::vector<sf::RectangleShape>>& Forecast::get() {
