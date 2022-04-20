@@ -257,7 +257,7 @@ void Application::simulate(sf::RenderWindow& window) {
 
         for (auto&& i : forecast.get()) {
             for (auto&& j : i) {
-                window.draw(j);
+                window.draw(j.first);
             }
         }
 

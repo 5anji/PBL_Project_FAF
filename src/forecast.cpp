@@ -1,5 +1,7 @@
 #include "forecast.h"
 
+#include "../libs/aStar.h"
+
 #include <fstream>
 #include <iostream>
 
@@ -34,14 +36,22 @@ loop:
     float square_height = static_cast<float>(window.getSize().y) / static_cast<float>(from_file.size());
 
     for (size_t i = 0; i < from_file.size(); i++) {
-        std::vector<sf::RectangleShape> temp;
+        std::vector<std::pair<sf::RectangleShape, bool>> temp;
         pos.x = 0;
         for (size_t j = 0; j < from_file[i].size(); j++) {
             sf::RectangleShape new_square;
+            bool flag = true;
             switch (from_file[i][j]) {
-            case '#':
+            case '#': {
                 new_square.setFillColor(sf::Color(0, 0, 0, 127));
-                break;
+                flag = false;
+            } break;
+            case 's': {
+                start = std::make_pair(i, j);
+            } break;
+            case 'f': {
+                finish = std::make_pair(i, j);
+            } break;
             default:
                 new_square.setFillColor(sf::Color(0, 0, 0, 0));
                 break;
@@ -50,16 +60,18 @@ loop:
             new_square.setSize(sf::Vector2<float>(square_width, square_height));
 
             pos.x += square_width;
-            temp.push_back(new_square);
+            temp.push_back(std::make_pair(new_square, flag));
         }
         pos.y += square_height;
         forecast.push_back(temp);
     }
+    A_Star path(forecast.size(), forecast[0].size(), forecast);
+    path.aStarSearch(start, finish);
 }
 void Forecast::operator=(const Forecast& copy) {
     forecast = const_cast<Forecast&>(copy).get();
 }
 
-std::vector<std::vector<sf::RectangleShape>>& Forecast::get() {
+std::vector<std::vector<std::pair<sf::RectangleShape, bool>>>& Forecast::get() {
     return forecast;
 }
