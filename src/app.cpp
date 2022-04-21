@@ -34,8 +34,6 @@ int8_t Application::start() {
             simulate(window);
             break;
         case 2: {
-            map.get().clear();
-            forecast.get().clear();
             map = Map(window, map_directory, map_file);
             forecast = Forecast(window, map_directory, forecast_file);
         } break;

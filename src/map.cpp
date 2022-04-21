@@ -62,6 +62,7 @@ loop:
     }
 }
 void Map::operator=(const Map& copy) {
+    this->map.clear();
     this->map = const_cast<Map&>(copy).get();
 }
 

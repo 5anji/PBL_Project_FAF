@@ -5,6 +5,7 @@
 #include <cmath>
 #include <cstring>
 #include <iostream>
+#include <random>
 #include <set>
 #include <stack>
 #include <vector>
@@ -12,11 +13,20 @@
 struct Cell {
     uint16_t parent_i, parent_j;
     float f, g, h;
+    Cell()
+            : parent_i(0)
+            , parent_j(0)
+            , f(0.0f)
+            , g(0.0f)
+            , h(0) {}
 };
 
 class A_Star {
     const uint16_t ROW, COL;
     std::vector<std::vector<std::pair<sf::RectangleShape, bool>>>& grid;
+    std::random_device generator;
+    std::uniform_int_distribution<int> distribution;
+    sf::Color path_color;
 
     bool isValid(uint16_t row, uint16_t col) {
         return (row < ROW) && (col < COL);
@@ -52,7 +62,7 @@ class A_Star {
         while (!Path.empty()) {
             std::pair<uint16_t, uint16_t> p = Path.top();
             Path.pop();
-            grid[p.first][p.second].first.setFillColor(sf::Color::Red);
+            grid[p.first][p.second].first.setFillColor(path_color);
         }
 
         return;
@@ -62,14 +72,16 @@ public:
     A_Star(uint16_t r, uint16_t c, std::vector<std::vector<std::pair<sf::RectangleShape, bool>>>& grid)
             : ROW(r)
             , COL(c)
-            , grid(grid) {}
+            , grid(grid)
+            , distribution(0, 1)
+            , path_color(distribution(generator) * 255, distribution(generator) * 255, distribution(generator) * 255) {}
 
     void aStarSearch(std::pair<uint16_t, uint16_t>& src, std::pair<uint16_t, uint16_t>& dest) {
         bool condition(!isValid(src.first, src.second) || !isValid(dest.first, dest.second) || !isUnBlocked(grid, src.first, src.second) || !isUnBlocked(grid, dest.first, dest.second) || isDestination(src.first, src.second, dest));
 
         if (condition) return;
 
-        std::vector<std::vector<bool>> closedList(ROW, std::vector<bool>(COL, 0));
+        std::vector<std::vector<bool>> closedList(ROW, std::vector<bool>(COL, false));
 
         std::vector<std::vector<Cell>> cellDetails(ROW, std::vector<Cell>(COL, Cell()));
 
@@ -332,7 +344,6 @@ public:
                 }
             }
         }
-
         if (!foundDest) return;
     }
 };

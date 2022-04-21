@@ -1,6 +1,7 @@
 #include "../libs/isNumber.h"
 #include "../libs/str2int.h"
 #include "app.h"
+
 int main(int argc, const char** argv) {
     uint16_t width(1024), height(768);
     std::string map("default.txt"), forecast("forecast.txt");
@@ -65,20 +66,7 @@ int main(int argc, const char** argv) {
             }
         }
     }
-    // A_Star s(3, 3);
-    // std::vector<std::vector<int>> grid = {{1, 1, 1}, {0, 0, 1}, {0, 1, 1}};
-    // // for (size_t i = 0; i < 3; i++) {
 
-    // //     for (size_t j = 0; j < 3; j++) {
-    // //         std::cin >> grid[i][j];
-    // //     }
-    // // }
-
-    // std::pair<int, int> src = std::make_pair(2, 1);
-
-    // std::pair<int, int> dest = std::make_pair(0, 0);
-
-    // s.aStarSearch(grid, src, dest);
     Application app(width, height, map, forecast);
     return app.start();
 }

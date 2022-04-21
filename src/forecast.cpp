@@ -7,7 +7,8 @@
 
 Forecast::Forecast() {}
 Forecast::Forecast(const Forecast& copy)
-        : forecast(copy.forecast) {}
+        : forecast(copy.forecast)
+        , paths(9) {}
 
 Forecast::Forecast(sf::RenderWindow& window, const std::string map_directory, std::string forecast_file) {
 loop:
@@ -31,6 +32,7 @@ loop:
     infile.close();
 
     // parsing characters to figures:
+    paths.reserve(9);
     sf::Vector2<float> pos(0, 0);
     float square_width = static_cast<float>(window.getSize().x) / static_cast<float>(from_file[0].size());
     float square_height = static_cast<float>(window.getSize().y) / static_cast<float>(from_file.size());
@@ -47,10 +49,15 @@ loop:
                 flag = false;
             } break;
             case 's': {
-                start = std::make_pair(i, j);
+                if (isdigit(from_file[i][j + 1])) {
+                    paths[(from_file[i][j + 1] - 48)].first = std::make_pair(i, j);
+                }
+
             } break;
             case 'f': {
-                finish = std::make_pair(i, j);
+                if (isdigit(from_file[i][j + 1])) {
+                    paths[(from_file[i][j + 1] - 48)].second = std::make_pair(i, j);
+                }
             } break;
             default:
                 new_square.setFillColor(sf::Color(0, 0, 0, 0));
@@ -65,10 +72,15 @@ loop:
         pos.y += square_height;
         forecast.push_back(temp);
     }
-    A_Star path(forecast.size(), forecast[0].size(), forecast);
-    path.aStarSearch(start, finish);
+
+    for (uint8_t i = 0; i < 10; i++) {
+        A_Star* path = new A_Star(forecast.size(), forecast[0].size(), forecast);
+        path->aStarSearch(paths[i].first, paths[i].second);
+        delete path;
+    }
 }
 void Forecast::operator=(const Forecast& copy) {
+    this->forecast.clear();
     forecast = const_cast<Forecast&>(copy).get();
 }
 
