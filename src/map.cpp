@@ -41,10 +41,10 @@ loop:
 
             switch (from_file[i][j]) {
             case '*':
-                new_square.setFillColor(sf::Color(34, 139, 34));
+                new_square.setFillColor(sf::Color(8, 92, 39));
                 break;
             case '^':
-                new_square.setFillColor(sf::Color(250, 240, 230));  // linen(brown)
+                new_square.setFillColor(sf::Color(110, 65, 11));  // linen(brown)
                 break;
             default:
                 new_square.setFillColor(sf::Color(0, 68, 148));

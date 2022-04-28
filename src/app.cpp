@@ -328,7 +328,7 @@ void Application::simulate(sf::RenderWindow& window) {
 
 // Displaying info about creators
 void Application::display_credits(sf::RenderWindow& window) {
-    std::wstring credits = L"AeroFly - a project that has the goal to show how the air traffic is managed\nwhen it has to pass through bad weather conditions. The creators are young\n\t\tstudents of the 1st Course at Software Engineering, FAF-213. \n\n\t\t\t\t\t\t\t\t\t\t\t\tCreators: \n\t\t\t\t\t\t\t\t\t - Gîtlan Gabriel (Architector)\n\t\t\t\t\t\t\t\t\t - Maria Afteni (Leader)\n\t\t\t\t\t\t\t\t\t - Iațco Sorin\n\t\t\t\t\t\t\t\t\t - Guțu Dinu\n\t\t\t\t\t\t\t\t\t - Golban Beatrice\n\t\t\t\t\t\t\t\t\t - Chihai Nichita";
+    std::wstring credits = L"AeroFly - a project that has the goal to show how the air traffic is managed\nwhen it has to pass through bad weather conditions. The creators are young\n\t\tstudents of the 1st Course at Software Engineering, FAF-213. \n\n\t\t\t\t\t\t\t\t\t\t\t\tCreators: \n\t\t\t\t\t\t\t\t\t - Gîtlan Gabriel (Architector)\n\t\t\t\t\t\t\t\t\t - Maria Afteni (Leader)\n\t\t\t\t\t\t\t\t\t - Iațco Sorin (Visual Builder)\n\t\t\t\t\t\t\t\t\t - Guțu Dinu\n\t\t\t\t\t\t\t\t\t - Golban Beatrice\n\t\t\t\t\t\t\t\t\t - Chihai Nichita";
     // std::wcout << credits << std::endl;
     sf::Font font;
 
