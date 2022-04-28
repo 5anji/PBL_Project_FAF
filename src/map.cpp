@@ -61,8 +61,9 @@ loop:
         map.push_back(temp);
     }
 }
-void Map::operator=(Map copy) {
-    map = copy.get();
+void Map::operator=(const Map& copy) {
+    this->map.clear();
+    this->map = const_cast<Map&>(copy).get();
 }
 
 std::vector<std::vector<sf::RectangleShape>>& Map::get() {

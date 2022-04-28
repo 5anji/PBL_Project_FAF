@@ -1,75 +1,18 @@
 #include "app.h"
 
-#include "../libs/isNumber.h"
-#include "../libs/str2int.h"
-
 #include <cmath>
 #include <fstream>
 
 // Creating the object
-Application::Application(int argc, const char** argv)
-        : video_mode(1024, 768)
+Application::Application(uint16_t width, uint16_t height, std::string& map, std::string& forecast)
+        : video_mode(width, height)
         , style(sf::Style::Close)
         , title("AeroFly")
         , map_directory("maps/")
-        , map_file("default.txt")
-        , forecast_file("forecast.txt") {
-    if (argc > 0) {
-        modify_args(argc, argv);
-    }
+        , map_file(map)
+        , forecast_file(forecast) {
+
     settings.antialiasingLevel = 4;
-}
-
-// Modify the default prefix
-void Application::modify_args(int argc, const char** argv) {
-    for (uint8_t i = 1; i < static_cast<int8_t>(argc); i++) {
-        switch (str2int(argv[i])) {
-        case str2int("-d"): {
-            if ((i + 2) < argc) {
-                std::string square_width = argv[i + 1];
-                std::string square_height = argv[i + 2];
-                if (isNumber(square_width) && isNumber(square_height)) {
-                    uint16_t temp_width = std::stoi(square_width);
-                    uint16_t temp_height = std::stoi(square_height);
-
-                    float report = static_cast<float>(temp_width) / static_cast<float>(temp_height);
-                    bool rep_condition = (temp_width >= 200) && (temp_height >= 200) && (0.5f < report) && (report < 2.f);
-
-                    if (rep_condition) {
-                        video_mode.width = temp_width;
-                        video_mode.height = temp_height;
-                    } else {
-                        std::cout << "Inacceptable window size. Using 1024x768" << std::endl;
-                    }
-
-                } else {
-                    std::cout << "Invalid expression. Using 1024x768" << std::endl;
-                }
-            } else {
-                std::cout << "Invalid expression. Using 1024x768" << std::endl;
-            }
-            break;
-        }
-        case str2int("-m"):
-            if ((i + 1) < argc) {
-                map_file = argv[i + 1];
-            } else {
-                std::cout << "Invalid expression. Using default map" << std::endl;
-            }
-            break;
-        case str2int("-f"):
-            if ((i + 1) < argc) {
-                forecast_file = argv[i + 1];
-            } else {
-                std::cout << "Invalid expression. Using default map" << std::endl;
-            }
-            break;
-        case str2int("-h"):
-        default:
-            /// @todo: display help
-            break;
-        }
-    }
 }
 
 // Starting the main window
@@ -91,8 +34,6 @@ int8_t Application::start() {
             simulate(window);
             break;
         case 2: {
-            map.get().clear();
-            forecast.get().clear();
             map = Map(window, map_directory, map_file);
             forecast = Forecast(window, map_directory, forecast_file);
         } break;
@@ -314,7 +255,7 @@ void Application::simulate(sf::RenderWindow& window) {
 
         for (auto&& i : forecast.get()) {
             for (auto&& j : i) {
-                window.draw(j);
+                window.draw(j.first);
             }
         }
 
