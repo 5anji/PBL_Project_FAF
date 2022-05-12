@@ -74,9 +74,8 @@ loop:
     }
 
     for (uint8_t i = 0; i < 10; i++) {
-        A_Star* path = new A_Star(forecast.size(), forecast[0].size(), forecast);
-        path->aStarSearch(paths[i].first, paths[i].second);
-        delete path;
+        A_Star path(forecast.size(), forecast[0].size(), &forecast);
+        path.aStarSearch(paths[i].first, paths[i].second);
     }
 }
 void Forecast::operator=(const Forecast& copy) {
