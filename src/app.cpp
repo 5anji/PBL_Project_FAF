@@ -204,6 +204,28 @@ void Application::simulate(sf::RenderWindow& window) {
     text.setOrigin(textRect.left + textRect.width / 2, textRect.top + textRect.height / 2);
     text.setPosition(position.x + 25, position.y + 15);
 
+    sf::RectangleShape button_r;
+    sf::RectangleShape overlay_r;
+    sf::Vector2<float> size_r(70, 30);
+    sf::Vector2<float> position_r(window.getSize().x - 80, 10);
+
+    button_r.setSize(size_r);
+    overlay_r.setSize(size_r);
+    button_r.setPosition(position_r);
+    overlay_r.setPosition(position_r);
+    button_r.setFillColor(sf::Color(255, 255, 255, 63.f));
+    overlay_r.setFillColor(sf::Color(0, 0, 0, 0.5f));
+
+    sf::Text text_r;
+    text_r.setFont(font);
+    text_r.setString("Reload");
+    text_r.setStyle(sf::Text::Bold);
+    text_r.setFillColor(sf::Color(255, 255, 255, 63.f));
+    text_r.setCharacterSize(18);
+    sf::FloatRect textRect_r = text_r.getLocalBounds();
+    text_r.setOrigin(textRect_r.left + textRect_r.width / 2, textRect_r.top + textRect_r.height / 2);
+    text_r.setPosition(position_r.x + 35, position_r.y + 15);
+
     bool breaker = true;
 
     while (window.isOpen() && breaker) {
@@ -227,7 +249,17 @@ void Application::simulate(sf::RenderWindow& window) {
                     overlay.setOutlineColor(sf::Color(0, 0, 0, 0));
                     text.setFillColor(sf::Color(255, 255, 255, 63.f));
                 }
-
+                if (overlay_r.getGlobalBounds().contains(mousePosF)) {
+                    overlay_r.setFillColor(sf::Color(255, 255, 255, 63.f));
+                    overlay_r.setOutlineThickness(3);
+                    overlay_r.setOutlineColor(sf::Color(112, 112, 112));
+                    text_r.setFillColor(sf::Color(255, 255, 255, 255.f));
+                } else {
+                    overlay_r.setFillColor(sf::Color(0, 0, 0, 0));
+                    overlay_r.setOutlineThickness(0);
+                    overlay_r.setOutlineColor(sf::Color(0, 0, 0, 0));
+                    text_r.setFillColor(sf::Color(255, 255, 255, 63.f));
+                }
                 break;
             }
             case sf::Event::MouseButtonPressed: {
@@ -236,7 +268,10 @@ void Application::simulate(sf::RenderWindow& window) {
 
                 if (overlay.getGlobalBounds().contains(mousePosF))
                     breaker = false;
-
+                if (overlay_r.getGlobalBounds().contains(mousePosF)) {
+                    map = Map(window, map_directory, map_file);
+                    forecast = Forecast(window, map_directory, forecast_file);
+                }
                 break;
             }
             default:
@@ -245,6 +280,10 @@ void Application::simulate(sf::RenderWindow& window) {
         }
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::LControl) && sf::Keyboard::isKeyPressed(sf::Keyboard::Q)) breaker = false;
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::BackSpace)) breaker = false;
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::LControl) && sf::Keyboard::isKeyPressed(sf::Keyboard::R)) {
+            map = Map(window, map_directory, map_file);
+            forecast = Forecast(window, map_directory, forecast_file);
+        }
 
         window.clear();
 
@@ -263,6 +302,10 @@ void Application::simulate(sf::RenderWindow& window) {
         window.draw(button);
         window.draw(overlay);
         window.draw(text);
+
+        window.draw(button_r);
+        window.draw(overlay_r);
+        window.draw(text_r);
 
         window.display();
     }
