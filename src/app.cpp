@@ -3,6 +3,10 @@
 #include <cmath>
 #include <fstream>
 
+float step = 0.0015f;
+
+sf::Vector2<float> b_scale(1.25f, 1.25f);
+
 // Creating the object
 Application::Application(uint16_t width, uint16_t height, std::string& map, std::string& forecast)
         : video_mode(width, height)
@@ -100,9 +104,6 @@ uint8_t Application::display_menu(sf::RenderWindow& window) {
     }
 
     uint8_t return_entry = 0;
-    float step = 0.0015f;
-
-    sf::Vector2<float> b_scale(1.25f, 1.25f);
 
     while (window.isOpen() && !return_entry) {
         sf::Event Event;
@@ -324,10 +325,6 @@ void Application::display_credits(sf::RenderWindow& window) {
     texture.loadFromFile("textures/menu-sky.jpg");
     texture.setSmooth(true);
     sf::Sprite background(texture);
-
-    float step = 0.0015f;
-
-    sf::Vector2<float> b_scale(1.25f, 1.25f);
 
     while (window.isOpen() && breaker) {
         sf::Event event;

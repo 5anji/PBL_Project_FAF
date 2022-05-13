@@ -11,7 +11,7 @@
 #include <vector>
 
 struct Cell {
-    int16_t parent_i, parent_j;
+    uint64_t parent_i, parent_j;
     float f, g, h;
     Cell()
             : parent_i(0)
@@ -63,6 +63,12 @@ class A_Star {
             std::pair<uint64_t, uint64_t> p = Path.top();
             Path.pop();
             (*grid)[p.first][p.second].first.setFillColor(path_color);
+
+            for (int8_t i = -1; i < 1; i++) {
+                for (int8_t j = -1; j < 1; j++) {
+                    (*grid)[p.first + i][p.second + j].second = false;
+                }
+            }
         }
 
         return;
@@ -74,10 +80,10 @@ public:
             , COL(c)
             , grid(grid)
             , distribution(0, 1)
-            , path_color(distribution(generator) * 255, distribution(generator) * 255, distribution(generator) * 255) {}
+            , path_color(distribution(generator) * 255, distribution(generator) * 255, distribution(generator) * 255, 191) {}
 
     void aStarSearch(std::pair<uint64_t, uint64_t>& src, std::pair<uint64_t, uint64_t>& dest) {
-        bool condition(!isValid(src.first, src.second) || !isValid(dest.first, dest.second) || !isUnBlocked( src.first, src.second) || !isUnBlocked( dest.first, dest.second) || isDestination(src.first, src.second, dest));
+        bool condition(!isValid(src.first, src.second) || !isValid(dest.first, dest.second) || !isUnBlocked(src.first, src.second) || !isUnBlocked(dest.first, dest.second) || isDestination(src.first, src.second, dest));
 
         if (condition) return;
 
@@ -132,7 +138,7 @@ public:
                     return;
                 }
 
-                else if (closedList[i - 1][j] == false && isUnBlocked( i - 1, j)) {
+                else if (!closedList[i - 1][j] && isUnBlocked(i - 1, j)) {
                     gNew = cellDetails[i][j].g + 1.0;
                     hNew = calculateHValue(i - 1, j, dest);
                     fNew = gNew + hNew;
@@ -160,7 +166,7 @@ public:
                     return;
                 }
 
-                else if (closedList[i + 1][j] == false && isUnBlocked( i + 1, j)) {
+                else if (!closedList[i + 1][j] && isUnBlocked(i + 1, j)) {
                     gNew = cellDetails[i][j].g + 1.0;
                     hNew = calculateHValue(i + 1, j, dest);
                     fNew = gNew + hNew;
@@ -188,7 +194,7 @@ public:
                     return;
                 }
 
-                else if (closedList[i][j + 1] == false && isUnBlocked( i, j + 1)) {
+                else if (!closedList[i][j + 1] && isUnBlocked(i, j + 1)) {
                     gNew = cellDetails[i][j].g + 1.0;
                     hNew = calculateHValue(i, j + 1, dest);
                     fNew = gNew + hNew;
@@ -216,7 +222,7 @@ public:
                     return;
                 }
 
-                else if (closedList[i][j - 1] == false && isUnBlocked( i, j - 1)) {
+                else if (!closedList[i][j - 1] && isUnBlocked(i, j - 1)) {
                     gNew = cellDetails[i][j].g + 1.0;
                     hNew = calculateHValue(i, j - 1, dest);
                     fNew = gNew + hNew;
@@ -244,7 +250,7 @@ public:
                     return;
                 }
 
-                else if (closedList[i - 1][j + 1] == false && isUnBlocked( i - 1, j + 1)) {
+                else if (!closedList[i - 1][j + 1] && isUnBlocked(i - 1, j + 1)) {
                     gNew = cellDetails[i][j].g + 1.414;
                     hNew = calculateHValue(i - 1, j + 1, dest);
                     fNew = gNew + hNew;
@@ -272,7 +278,7 @@ public:
                     return;
                 }
 
-                else if (closedList[i - 1][j - 1] == false && isUnBlocked( i - 1, j - 1)) {
+                else if (!closedList[i - 1][j - 1] && isUnBlocked(i - 1, j - 1)) {
                     gNew = cellDetails[i][j].g + 1.414;
                     hNew = calculateHValue(i - 1, j - 1, dest);
                     fNew = gNew + hNew;
@@ -300,7 +306,7 @@ public:
                     return;
                 }
 
-                else if (closedList[i + 1][j + 1] == false && isUnBlocked( i + 1, j + 1)) {
+                else if (!closedList[i + 1][j + 1] && isUnBlocked(i + 1, j + 1)) {
                     gNew = cellDetails[i][j].g + 1.414;
                     hNew = calculateHValue(i + 1, j + 1, dest);
                     fNew = gNew + hNew;
@@ -327,7 +333,7 @@ public:
                     return;
                 }
 
-                else if (closedList[i + 1][j - 1] == false && isUnBlocked( i + 1, j - 1)) {
+                else if (!closedList[i + 1][j - 1] && isUnBlocked(i + 1, j - 1)) {
                     gNew = cellDetails[i][j].g + 1.414;
                     hNew = calculateHValue(i + 1, j - 1, dest);
                     fNew = gNew + hNew;
