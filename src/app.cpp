@@ -1,5 +1,7 @@
 #include "app.h"
 
+#include "button.h"
+
 #include <cmath>
 #include <fstream>
 
@@ -74,33 +76,20 @@ uint8_t Application::display_menu(sf::RenderWindow& window) {
     icon.setSmooth(true);
     menu_title.setTexture(&icon);
 
-    std::vector<std::tuple<sf::RectangleShape, sf::RectangleShape, sf::Text>> buttons;
+    std::vector<Button> buttons;
     const char* titles[] = {"Start Simulation", "Reload Files", "Credits", "Exit"};
 
     for (size_t i = 0; i < 4; i++) {
-        sf::RectangleShape button;
-        sf::RectangleShape overlay;
-        sf::Vector2<float> size(350, 45);
-        sf::Vector2<float> position(window.getSize().x / 2 - 175, 300 + (i + 1) * (window.getSize().y / 8) - 22.5f);
-
-        button.setSize(size);
-        overlay.setSize(button.getSize());
-        button.setPosition(position);
-        overlay.setPosition(button.getPosition());
-        button.setFillColor(sf::Color(37, 114, 203));
-        overlay.setFillColor(sf::Color(0, 0, 0, 0));
-
-        sf::Text text;
-        text.setFont(font);
-        text.setStyle(sf::Text::Bold);
-        text.setString(titles[i]);
-        text.setFillColor(sf::Color::White);
-        text.setCharacterSize(36);
-        sf::FloatRect textRect = text.getLocalBounds();
-        text.setOrigin(textRect.left + textRect.width / 2, textRect.top + textRect.height / 2);
-        text.setPosition(position.x + 175, position.y + 22.5f);
-
-        buttons.push_back(std::make_tuple(button, overlay, text));
+        Button button(
+                sf::Vector2<float>(350, 45),
+                sf::Vector2<float>(window.getSize().x / 2 - 175, 300 + (i + 1) * (window.getSize().y / 8) - 22.5f),
+                font,
+                titles[i],
+                sf::Color(37, 114, 203),
+                sf::Color(0, 0, 0, 0),
+                sf::Color::White,
+                36);
+        buttons.push_back(button);
     }
 
     uint8_t return_entry = 0;
@@ -116,31 +105,29 @@ uint8_t Application::display_menu(sf::RenderWindow& window) {
                 sf::Vector2i mousePos = sf::Mouse::getPosition(window);
                 sf::Vector2f mousePosF(static_cast<float>(mousePos.x), static_cast<float>(mousePos.y));
                 for (auto&& i : buttons) {
-                    if (std::get<1>(i).getGlobalBounds().contains(mousePosF)) {
-                        std::get<1>(i).setFillColor(sf::Color(255, 255, 255, 63.f));
-                        std::get<1>(i).setOutlineThickness(3);
-                        std::get<1>(i).setOutlineColor(sf::Color(112, 112, 112));
+                    if (i.overlay.getGlobalBounds().contains(mousePosF)) {
+                        i.overlay.setFillColor(sf::Color(255, 255, 255, 63.f));
+                        i.overlay.setOutlineThickness(3);
+                        i.overlay.setOutlineColor(sf::Color(112, 112, 112));
                     } else {
-                        std::get<1>(i).setFillColor(sf::Color(0, 0, 0, 0));
-                        std::get<1>(i).setOutlineThickness(0);
-                        std::get<1>(i).setOutlineColor(sf::Color(0, 0, 0, 0));
+                        i.overlay.setFillColor(sf::Color(0, 0, 0, 0));
+                        i.overlay.setOutlineThickness(0);
+                        i.overlay.setOutlineColor(sf::Color(0, 0, 0, 0));
                     }
                 }
 
-                break;
-            }
+            } break;
             case sf::Event::MouseButtonPressed: {
                 sf::Vector2i mousePos = sf::Mouse::getPosition(window);
                 sf::Vector2f mousePosF(static_cast<float>(mousePos.x), static_cast<float>(mousePos.y));
 
                 for (size_t i = 0; i < 4; i++) {
-                    if (std::get<1>(buttons[i]).getGlobalBounds().contains(mousePosF)) {
+                    if (buttons[i].overlay.getGlobalBounds().contains(mousePosF)) {
                         return_entry = i + 1;
                     }
                 }
 
-                break;
-            }
+            } break;
             default:
                 break;
             }
@@ -166,9 +153,7 @@ uint8_t Application::display_menu(sf::RenderWindow& window) {
         window.draw(background);
         window.draw(menu_title);
         for (auto&& i : buttons) {
-            window.draw(std::get<0>(i));
-            window.draw(std::get<1>(i));
-            window.draw(std::get<2>(i));
+            window.draw(i);
         }
 
         window.display();
@@ -182,50 +167,25 @@ void Application::simulate(sf::RenderWindow& window) {
     sf::Font font;
     if (!font.loadFromFile("fonts/NotoSans-Regular.ttf"))
         std::cout << "Can't find the font file" << std::endl;
-    sf::RectangleShape button;
-    sf::RectangleShape overlay;
-    sf::Vector2<float> size(50, 30);
-    sf::Vector2<float> position(10, 10);
 
-    button.setSize(size);
-    overlay.setSize(size);
-    button.setPosition(position);
-    overlay.setPosition(position);
-    button.setFillColor(sf::Color(255, 255, 255, 63.f));
-    overlay.setFillColor(sf::Color(0, 0, 0, 0.5f));
-
-    sf::Text text;
-    text.setFont(font);
-    text.setString("Back");
-    text.setStyle(sf::Text::Bold);
-    text.setFillColor(sf::Color(255, 255, 255, 63.f));
-    text.setCharacterSize(18);
-    sf::FloatRect textRect = text.getLocalBounds();
-    text.setOrigin(textRect.left + textRect.width / 2, textRect.top + textRect.height / 2);
-    text.setPosition(position.x + 25, position.y + 15);
-
-    sf::RectangleShape button_r;
-    sf::RectangleShape overlay_r;
-    sf::Vector2<float> size_r(70, 30);
-    sf::Vector2<float> position_r(window.getSize().x - 80, 10);
-
-    button_r.setSize(size_r);
-    overlay_r.setSize(size_r);
-    button_r.setPosition(position_r);
-    overlay_r.setPosition(position_r);
-    button_r.setFillColor(sf::Color(255, 255, 255, 63.f));
-    overlay_r.setFillColor(sf::Color(0, 0, 0, 0.5f));
-
-    sf::Text text_r;
-    text_r.setFont(font);
-    text_r.setString("Reload");
-    text_r.setStyle(sf::Text::Bold);
-    text_r.setFillColor(sf::Color(255, 255, 255, 63.f));
-    text_r.setCharacterSize(18);
-    sf::FloatRect textRect_r = text_r.getLocalBounds();
-    text_r.setOrigin(textRect_r.left + textRect_r.width / 2, textRect_r.top + textRect_r.height / 2);
-    text_r.setPosition(position_r.x + 35, position_r.y + 15);
-
+    Button left(
+            sf::Vector2<float>(50, 30),
+            sf::Vector2<float>(10, 10),
+            font,
+            "Back",
+            sf::Color(255, 255, 255, 63.f),
+            sf::Color(0, 0, 0, 0.5f),
+            sf::Color(255, 255, 255, 63.f),
+            18);
+    Button right(
+            sf::Vector2<float>(70, 30),
+            sf::Vector2<float>(window.getSize().x - 80, 10),
+            font,
+            "Reload",
+            sf::Color(255, 255, 255, 63.f),
+            sf::Color(0, 0, 0, 0.5f),
+            sf::Color(255, 255, 255, 63.f),
+            18);
     bool breaker = true;
 
     while (window.isOpen() && breaker) {
@@ -238,42 +198,43 @@ void Application::simulate(sf::RenderWindow& window) {
             case sf::Event::MouseMoved: {
                 sf::Vector2i mousePos = sf::Mouse::getPosition(window);
                 sf::Vector2f mousePosF(static_cast<float>(mousePos.x), static_cast<float>(mousePos.y));
-                if (overlay.getGlobalBounds().contains(mousePosF)) {
-                    overlay.setFillColor(sf::Color(255, 255, 255, 63.f));
-                    overlay.setOutlineThickness(3);
-                    overlay.setOutlineColor(sf::Color(112, 112, 112));
-                    text.setFillColor(sf::Color(255, 255, 255, 255.f));
+
+                if (left.overlay.getGlobalBounds().contains(mousePosF)) {
+                    left.overlay.setFillColor(sf::Color(255, 255, 255, 63.f));
+                    left.overlay.setOutlineThickness(3);
+                    left.overlay.setOutlineColor(sf::Color(112, 112, 112));
+                    left.text.setFillColor(sf::Color(255, 255, 255, 255.f));
                 } else {
-                    overlay.setFillColor(sf::Color(0, 0, 0, 0));
-                    overlay.setOutlineThickness(0);
-                    overlay.setOutlineColor(sf::Color(0, 0, 0, 0));
-                    text.setFillColor(sf::Color(255, 255, 255, 63.f));
+                    left.overlay.setFillColor(sf::Color(0, 0, 0, 0));
+                    left.overlay.setOutlineThickness(0);
+                    left.overlay.setOutlineColor(sf::Color(0, 0, 0, 0));
+                    left.text.setFillColor(sf::Color(255, 255, 255, 63.f));
                 }
-                if (overlay_r.getGlobalBounds().contains(mousePosF)) {
-                    overlay_r.setFillColor(sf::Color(255, 255, 255, 63.f));
-                    overlay_r.setOutlineThickness(3);
-                    overlay_r.setOutlineColor(sf::Color(112, 112, 112));
-                    text_r.setFillColor(sf::Color(255, 255, 255, 255.f));
+                if (right.overlay.getGlobalBounds().contains(mousePosF)) {
+                    right.overlay.setFillColor(sf::Color(255, 255, 255, 63.f));
+                    right.overlay.setOutlineThickness(3);
+                    right.overlay.setOutlineColor(sf::Color(112, 112, 112));
+                    right.text.setFillColor(sf::Color(255, 255, 255, 255.f));
                 } else {
-                    overlay_r.setFillColor(sf::Color(0, 0, 0, 0));
-                    overlay_r.setOutlineThickness(0);
-                    overlay_r.setOutlineColor(sf::Color(0, 0, 0, 0));
-                    text_r.setFillColor(sf::Color(255, 255, 255, 63.f));
+                    right.overlay.setFillColor(sf::Color(0, 0, 0, 0));
+                    right.overlay.setOutlineThickness(0);
+                    right.overlay.setOutlineColor(sf::Color(0, 0, 0, 0));
+                    right.text.setFillColor(sf::Color(255, 255, 255, 63.f));
                 }
-                break;
-            }
+
+            } break;
             case sf::Event::MouseButtonPressed: {
                 sf::Vector2i mousePos = sf::Mouse::getPosition(window);
                 sf::Vector2f mousePosF(static_cast<float>(mousePos.x), static_cast<float>(mousePos.y));
 
-                if (overlay.getGlobalBounds().contains(mousePosF))
+                if (left.overlay.getGlobalBounds().contains(mousePosF))
                     breaker = false;
-                if (overlay_r.getGlobalBounds().contains(mousePosF)) {
+                if (right.overlay.getGlobalBounds().contains(mousePosF)) {
                     map = Map(window, map_directory, map_file);
                     forecast = Forecast(window, map_directory, forecast_file);
                 }
-                break;
-            }
+
+            } break;
             default:
                 break;
             }
@@ -299,13 +260,8 @@ void Application::simulate(sf::RenderWindow& window) {
             }
         }
 
-        window.draw(button);
-        window.draw(overlay);
-        window.draw(text);
-
-        window.draw(button_r);
-        window.draw(overlay_r);
-        window.draw(text_r);
+        window.draw(right);
+        window.draw(left);
 
         window.display();
     }
@@ -341,27 +297,15 @@ void Application::display_credits(sf::RenderWindow& window) {
     text.setOrigin(textRect.left + textRect.width / 2, textRect.top + textRect.height / 2);
     text.setPosition(credits_position.x + 375, credits_position.y + 200);
 
-    sf::RectangleShape button;
-    sf::RectangleShape overlay;
-    sf::Vector2<float> size(30, 30);
-    sf::Vector2<float> position(credits_position.x - 40, credits_position.y - 40);
-
-    button.setSize(size);
-    overlay.setSize(size);
-    button.setPosition(position);
-    overlay.setPosition(position);
-    button.setFillColor(sf::Color(255, 255, 255, 0.f));
-    overlay.setFillColor(sf::Color(0, 0, 0, 0.f));
-
-    sf::Text title;
-    title.setFont(font);
-    title.setString("X");
-    title.setStyle(sf::Text::Bold);
-    title.setFillColor(sf::Color(0, 0, 0));
-    title.setCharacterSize(18);
-    sf::FloatRect temp = title.getLocalBounds();
-    title.setOrigin(temp.left + temp.width / 2, temp.top + temp.height / 2);
-    title.setPosition(position.x + 15, position.y + 15);
+    Button button(
+            sf::Vector2<float>(30, 30),
+            sf::Vector2<float>(credits_position.x - 40, credits_position.y - 40),
+            font,
+            "X",
+            sf::Color(255, 255, 255, 0.f),
+            sf::Color(0, 0, 0, 0.f),
+            sf::Color(0, 0, 0),
+            18);
 
     bool breaker = true;
     sf::Texture texture;
@@ -379,27 +323,25 @@ void Application::display_credits(sf::RenderWindow& window) {
             case sf::Event::MouseMoved: {
                 sf::Vector2i mousePos = sf::Mouse::getPosition(window);
                 sf::Vector2f mousePosF(static_cast<float>(mousePos.x), static_cast<float>(mousePos.y));
-                if (overlay.getGlobalBounds().contains(mousePosF)) {
-                    overlay.setFillColor(sf::Color(255, 255, 255, 63.f));
-                    overlay.setOutlineThickness(3);
-                    overlay.setOutlineColor(sf::Color(37, 114, 203));
+                if (button.overlay.getGlobalBounds().contains(mousePosF)) {
+                    button.overlay.setFillColor(sf::Color(255, 255, 255, 63.f));
+                    button.overlay.setOutlineThickness(3);
+                    button.overlay.setOutlineColor(sf::Color(37, 114, 203));
                 } else {
-                    overlay.setFillColor(sf::Color(0, 0, 0, 0));
-                    overlay.setOutlineThickness(0);
-                    overlay.setOutlineColor(sf::Color(0, 0, 0, 0));
+                    button.overlay.setFillColor(sf::Color(0, 0, 0, 0));
+                    button.overlay.setOutlineThickness(0);
+                    button.overlay.setOutlineColor(sf::Color(0, 0, 0, 0));
                 }
 
-                break;
-            }
+            } break;
             case sf::Event::MouseButtonPressed: {
                 sf::Vector2i mousePos = sf::Mouse::getPosition(window);
                 sf::Vector2f mousePosF(static_cast<float>(mousePos.x), static_cast<float>(mousePos.y));
 
-                if (overlay.getGlobalBounds().contains(mousePosF))
+                if (button.overlay.getGlobalBounds().contains(mousePosF))
                     breaker = false;
 
-                break;
-            }
+            } break;
             default:
                 break;
             }
@@ -426,8 +368,6 @@ void Application::display_credits(sf::RenderWindow& window) {
 
         window.draw(background);
         window.draw(button);
-        window.draw(overlay);
-        window.draw(title);
         window.draw(border);
         window.draw(text);
 
