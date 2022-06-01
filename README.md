@@ -1,5 +1,9 @@
 # AeroFly
 
+<p align="center" style="text-align:center">
+    <img src="textures/Logo.png" width="512px" alt="logo"/>
+</p>
+
 ## Description
 
 This app is made by a group of FAF Students. Our app is made for showing, in 2D view, how civil planes can avoid storms and other restricted areas. Works for up to 10 airports(the number can be increased). The default map (default.txt) is based on Europe physical map, and restrictions (forecast.txt) is randomly generated. Remember that those 2 files are created as example, so they are not on 100% right. Of course, the map and restriction files are changeable, just type ```./Aerofly.out --help``` and see other _secret_ features of the applications. If you have ideas how to improve this project feel free to write in **issues**.
