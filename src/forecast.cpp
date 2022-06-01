@@ -48,6 +48,10 @@ loop:
                 new_square.setFillColor(sf::Color(0, 0, 0, 127));
                 flag = false;
             } break;
+            case '*': {
+                new_square.setFillColor(sf::Color(255, 0, 0, 127));
+                flag = false;
+            } break;
             case 's': {
                 if (isdigit(from_file[i][j + 1])) {
                     paths[(from_file[i][j + 1] - 48)].first = std::make_pair(i, j);

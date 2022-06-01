@@ -79,8 +79,8 @@ public:
             : ROW(r)
             , COL(c)
             , grid(grid)
-            , distribution(0, 1)
-            , path_color(distribution(generator) * 255, distribution(generator) * 255, distribution(generator) * 255, 191) {}
+            , distribution(0, 96)
+            , path_color(distribution(generator) + 159, distribution(generator) + 159, distribution(generator) + 159, static_cast<sf::Uint8>((0.6f) * 255.f)) {}
 
     void aStarSearch(std::pair<uint64_t, uint64_t>& src, std::pair<uint64_t, uint64_t>& dest) {
         bool condition(!isValid(src.first, src.second) || !isValid(dest.first, dest.second) || !isUnBlocked(src.first, src.second) || !isUnBlocked(dest.first, dest.second) || isDestination(src.first, src.second, dest));
